@@ -1,0 +1,3 @@
+RewriteEngine on
+RewriteCond /var/www/html/public/%{REQUEST_URI} !-f
+RewriteRule ^.*$ index.php

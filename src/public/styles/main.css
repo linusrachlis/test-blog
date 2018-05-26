@@ -1,0 +1,16 @@
+label
+{
+    display: block;
+}
+
+.timestamp
+{
+    font-style: italic;
+    font-size: 80%;
+}
+
+.error
+{
+    color: #c00;
+    font-weight: bold;
+}
