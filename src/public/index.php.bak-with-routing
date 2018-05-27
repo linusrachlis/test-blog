@@ -1,0 +1,85 @@
+<?php
+
+/*
+    Bootstrap
+*/
+
+declare(strict_types=1);
+
+define('APP_ENV', getenv('APP_ENV') ?: 'production');
+define('SRC_ROOT', dirname(__DIR__));
+define('APP_DIR', SRC_ROOT . '/app');
+define('ROUTES_DIR', APP_DIR . '/routes');
+define('ENV_DIR', APP_DIR . '/environments');
+
+interface Environment
+{
+    function pdo() : PDO;
+}
+
+function env() : Environment
+{
+    static $env;
+
+    if (!isset($env)) {
+        $env_file = ENV_DIR . '/' . APP_ENV . '.php';
+        $env = require $env_file;
+        if (!($env instanceof Environment))
+        {
+            exit("Failed to bootstrap");
+            // TODO logging
+        }
+    }
+
+    return $env;
+}
+
+/*
+    Include code for this particular application
+*/
+
+require_once APP_DIR . '/app.php';
+$routes = require APP_DIR . '/routes_list.php';
+
+/*
+    Route request
+*/
+
+$query_string_begin_pos = strpos($_SERVER['REQUEST_URI'], '?');
+$url = (false === $query_string_begin_pos) ?
+    $_SERVER['REQUEST_URI'] :
+    substr($_SERVER['REQUEST_URI'], 0, $query_string_begin_pos);
+$route_names = explode('/', $url);
+
+// Ignore the first and last pieces if they're blank
+// (will be true if URL started or ended with a '/')
+if ('' === $route_names[0])
+{
+    array_shift($route_names);
+}
+$route_length = count($route_names);
+if ($route_length &&
+    ('' === $route_names[$route_length - 1]))
+{
+    array_pop($route_names);
+}
+
+$first_route_name = count($route_names) ? array_shift($route_names) : 'default';
+
+if (isset($routes[$first_route_name]))
+{
+    // Route uses an explicit file
+    $first_route_file = (ROUTES_DIR . '/' . $routes[$first_route_name]);
+}
+elseif (in_array($first_route_name, $routes, true))
+{
+    // Route implicitly uses itself as the filename
+    $first_route_file = (ROUTES_DIR . '/' . $first_route_name . '.php');
+}
+else
+{
+    $first_route_file = (ROUTES_DIR . '/not_found.php');
+}
+
+$route_function = require $first_route_file;
+$route_function($route_names);

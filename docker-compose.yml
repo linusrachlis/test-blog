@@ -1,0 +1,35 @@
+version: '3'
+services:
+  web:
+    build: docker/web
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - 8080:80
+    environment:
+      - APP_ENV=development
+    restart: unless-stopped
+  phan:
+    build: docker/phan
+    # tty: true
+    # stdin_open: true
+    # command: ["/bin/sh"]
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - 4846:4846
+    # environment:
+      # - PHP_EXTRA_CONFIGURE_ARGS=--enable-pcntl
+    restart: unless-stopped
+  db:
+    ports:
+      - 3306:3306
+    image: mariadb:10.2
+    volumes:
+      - ./docker/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    environment:
+      - MYSQL_DATABASE=blog
+      - MYSQL_USER=blog
+      - MYSQL_PASSWORD=pass
+      - MYSQL_ROOT_PASSWORD=root
+    restart: unless-stopped

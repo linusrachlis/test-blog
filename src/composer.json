@@ -1,0 +1,14 @@
+{
+    "name": "lrachlis/blog",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            // "lib\\": "lib/",
+            // "app\\": "app/"
+        }
+    },
+    "require": {},
+    "require-dev": {
+        "phan/phan": "^0.12.5"
+    }
+}
