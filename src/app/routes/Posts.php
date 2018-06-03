@@ -44,24 +44,23 @@ class Posts
     static function create() : void
     {
         $form = new \lib\Form;
+        $subject_field = $form->field('subject');
+        $body_field = $form->field('body');
 
         if ('POST' == $_SERVER['REQUEST_METHOD'])
         {
-            $form->populate(
-                $_POST,
-                [
-                    'subject',
-                    'body'
-                ]
-            );
-            $form->required('subject', 'body');
+            $form->populate($_POST);
+            $subject_field->required();
+            $body_field->required();
 
             if ($form->is_valid())
             {
                 $stmt = env()->pdo()->prepare(
                     "INSERT INTO `post` (`posted_at`, `subject`, `body`)
                     VALUES (NOW(), ?, ?)");
-                $result = $stmt->execute([$_POST['subject'], $_POST['body']]);
+                $result = $stmt->execute($form->values(
+                    $subject_field,
+                    $body_field));
                 if (!$result)
                 {
                     // TODO logging
@@ -76,18 +75,18 @@ class Posts
         <form method=post>
             <label>
                 Subject<br>
-                <?php $form->begin_field() ?>
+                <?php $subject_field->begin() ?>
                 <input type=text name="%name" value="%value" %attr>
-                <?php $form->end_field('subject', 'class=error') ?>
+                <?php $subject_field->end('class=error') ?>
             </label>
-            <?= $form->errors('subject', '<div class=error>%s</div>') ?>
+            <?= $subject_field->errors('<div class=error>%s</div>') ?>
             <label>
                 Body<br>
-                <?php $form->begin_field() ?>
+                <?php $body_field->begin() ?>
                 <textarea name="%name" %attr>%value</textarea>
-                <?php $form->end_field('body', 'class=error') ?>
+                <?php $body_field->end('class=error') ?>
             </label>
-            <?= $form->errors('body', '<div class=error>%s</div>') ?>
+            <?= $body_field->errors('<div class=error>%s</div>') ?>
             <div>
                 <button type=submit>Create</button>
             </div>
